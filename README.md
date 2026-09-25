@@ -22,7 +22,7 @@ PTDeathRecovery observes the results of its commands rather than assuming that a
 
 - Project Triune
 - MacroQuest with Lua and ImGui support
-- MQ2Nav loaded, with a working Bazaar navmesh
+- MQ2Nav loaded, with a working Bazaar navmesh (included in releases)
 - [Triune Auto Combat](https://github.com/gennro/TriuneAutocombat) V3.1 loaded and awaiting commands
 - Character bind point set to The Bazaar
 - A current expedition already available to join
