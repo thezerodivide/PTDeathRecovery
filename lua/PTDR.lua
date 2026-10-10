@@ -34,6 +34,7 @@ local C = {
     stableSampleMs = 500,
     retrySpacingMs = 1000,
     navActivationGraceMs = 2000,
+    navArrivalDistance = 10,
     targetAcquireMs = 1000,
     tacReadinessProbeSpacingMs = 500,
     tacStartSettleMs = 2000,
@@ -604,8 +605,20 @@ local function tickNavigateMap()
     if not active and (app.ctx.seenActive or now() - app.ctx.commandAt >= C.navActivationGraceMs) then
         app.navOwned = false
         local distance = mapDistance()
-        log('OBSERVE', 'Navigation command ended; seen_active=%s final_distance=%.2f. Map usability will determine arrival success.',
+        log('OBSERVE', 'Navigation command ended; seen_active=%s final_distance=%.2f.',
             tostring(app.ctx.seenActive), distance or -1)
+        if distance and distance > C.navArrivalDistance then
+            log('OBSERVE', 'Navigation attempt %d ended %.2f from the waypoint map (limit %.2f); treating it as not arrived.',
+                attemptFor('navigation'), distance, C.navArrivalDistance)
+            if attemptFor('navigation') >= maxAttempts() then
+                failRecovery('navigation', string.format('navigation attempts exhausted after %d total attempts', maxAttempts()))
+            else
+                enterState(STATE.NAVIGATE_MAP, 'navigation ended short of the waypoint map; waiting to retry', {
+                    phase = 'retry_wait', retryAt = now() + C.retrySpacingMs,
+                })
+            end
+            return
+        end
         enterState(STATE.OPEN_MAP, 'navigation command ended; testing functional map usability')
         startMapOpenAttempt()
         return
